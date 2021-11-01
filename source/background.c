@@ -691,6 +691,10 @@ int background_w_fld(
     // w_ede(a) taken from eq. (11) in 1706.00730
     *w_fld = - dOmega_ede_over_da*a/Omega_ede/3./(1.-Omega_ede)+a_eq/3./(a+a_eq);
     break;
+  case SDE:
+  // Stochastic dark energy from eq. (18) in 1906.06107
+  	*w_fld = -1.*pba->w0_sde /(1.+pow(a,-1.*pba->alpha_sde)*pba->beta_sde);
+  	break;
   }
 
 
@@ -710,6 +714,9 @@ int background_w_fld(
       + dOmega_ede_over_da*dOmega_ede_over_da*a/3./(1.-Omega_ede)/(1.-Omega_ede)/Omega_ede
       + a_eq/3./(a+a_eq)/(a+a_eq);
     break;
+  case SDE:
+    *dw_over_da_fld = -1.*pba->alpha_sde * pba->beta_sde * pba->w0_sde * pow(a,-1.*pba->alpha_sde -1.) / (pow(1.+pow(a,-1.*pba->alpha_sde)*pba->beta_sde,2.));
+    break;
   }
 
   /** - finally, give the analytic solution of the following integral:
@@ -728,6 +735,9 @@ int background_w_fld(
     break;
   case EDE:
     class_stop(pba->error_message,"EDE implementation not finished: to finish it, read the comments in background.c just before this line\n");
+    break;
+  case SDE:
+    *integral_fld = 3.*(log(1./a) + pba->w0_sde*log((pow(a,pba->alpha_sde)+pba->beta_sde)/(1.+pba->beta_sde))/ pba->alpha_sde);
     break;
   }
 

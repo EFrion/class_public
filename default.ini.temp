@@ -105,11 +105,11 @@ N_ncdm =                          # Massive neutrino species
 ### For Omega_fld != 0
 # Chevalier-Linder-Polarski => CLP
 # Early Dark Energy         => EDE
-fluid_equation_of_state = SDE
+#fluid_equation_of_state = CLP
 
 #CLP case
-w0_fld = -0.9
-wa_fld = 0.
+#w0_fld = -0.9
+#wa_fld = 0.
 #cs2_fld = 1
 #EDE case
 #w0_fld = -0.9

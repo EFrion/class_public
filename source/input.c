@@ -2893,6 +2893,9 @@ int input_read_parameters_species(struct file_content * pfc,
       else if ((strstr(string1,"EDE") != NULL) || (strstr(string1,"ede") != NULL)) {
         pba->fluid_equation_of_state = EDE;
       }
+      else if ((strstr(string1,"SDE") != NULL) || (strstr(string1,"sde") != NULL)) {
+        pba->fluid_equation_of_state = SDE;
+      }
       else {
         class_stop(errmsg,"incomprehensible input '%s' for the field 'fluid_equation_of_state'",string1);
       }
@@ -2910,6 +2913,14 @@ int input_read_parameters_species(struct file_content * pfc,
       /* Read */
       class_read_double("w0_fld",pba->w0_fld);
       class_read_double("Omega_EDE",pba->Omega_EDE);
+      class_read_double("cs2_fld",pba->cs2_fld);
+    }
+    if (pba->fluid_equation_of_state == SDE) {
+      /** 8.a.2.4) Equation of state of the fluid in 'SDE' case */
+      /* Read */
+      class_read_double("w0_sde",pba->w0_sde);
+      class_read_double("alpha_sde",pba->alpha_sde);
+      class_read_double("beta_sde",pba->beta_sde);
       class_read_double("cs2_fld",pba->cs2_fld);
     }
   }
@@ -3449,6 +3460,9 @@ int input_prepare_pk_eq(struct precision * ppr,
   int true_hyrec_verbose;
   double true_w0_fld;
   double true_wa_fld;
+  double true_w0_sde;
+  double true_alpha_sde;
+  double true_beta_sde;
   double * z;
 
   /** Store the true cosmological parameters (w0, wa) somwhere before using temporarily some fake ones in this function */
@@ -3457,6 +3471,9 @@ int input_prepare_pk_eq(struct precision * ppr,
   true_hyrec_verbose = pth->hyrec_verbose;
   true_w0_fld = pba->w0_fld;
   true_wa_fld = pba->wa_fld;
+  true_w0_sde = pba->w0_sde;
+  true_alpha_sde = pba->alpha_sde;
+  true_beta_sde = pba ->beta_sde;
 
   /** The fake calls of the background and thermodynamics module will be done in non-verbose mode */
   pba->background_verbose = 0;
@@ -3515,6 +3532,9 @@ int input_prepare_pk_eq(struct precision * ppr,
     /* get chi = (tau[z_i] - tau_rec) in true model */
     pba->w0_fld = true_w0_fld;
     pba->wa_fld = true_wa_fld;
+    pba->w0_sde = true_w0_sde;
+    pba->alpha_sde = true_alpha_sde;
+    pba->beta_sde = true_beta_sde;
     class_call(background_init(ppr,pba),
                pba->error_message,
                errmsg);
@@ -3522,7 +3542,7 @@ int input_prepare_pk_eq(struct precision * ppr,
                pth->error_message,
                errmsg);
     delta_tau = pfo->pk_eq_tau[index_pk_eq_z] - pth->tau_rec;
-    /* launch iterations in order to coverge to effective model with wa=0 but the same chi = (tau[z_i] - tau_rec) */
+    /* launch iterations in order to converge to effective model with wa=0 but the same chi = (tau[z_i] - tau_rec) */
     pba->wa_fld=0.;
 
     do {
@@ -5401,6 +5421,10 @@ int input_default_params(struct background *pba,
   pba->wa_fld = 0.;
   /** 9.a.2.2) 'EDE' case */
   pba->Omega_EDE = 0.;
+  /** 9.a.2.3) 'SDE' case */
+  pba->w0_sde = 1.;
+  pba->alpha_sde = 0.;
+  pba->beta_sde = 0.;
   /** 9.b) Omega scalar field */
   /** 9.b.1) Potential parameters and initial conditions */
   pba->scf_parameters = NULL;

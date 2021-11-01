@@ -16,7 +16,7 @@ enum spatial_curvature {flat,open,closed};
 
 /** list of possible parametrisations of the DE equation of state */
 
-enum equation_of_state {CLP,EDE};
+enum equation_of_state {CLP,EDE,SDE};
 
 /** list of formats for the vector of background quantities */
 
@@ -107,6 +107,9 @@ struct background
   enum equation_of_state fluid_equation_of_state; /**< parametrisation scheme for fluid equation of state */
   double w0_fld;   /**< \f$ w0_{DE} \f$: current fluid equation of state parameter */
   double wa_fld;   /**< \f$ wa_{DE} \f$: fluid equation of state parameter derivative */
+  double w0_sde;
+  double alpha_sde;
+  double beta_sde;
   double cs2_fld;  /**< \f$ c^2_{s~DE} \f$: sound speed of the fluid in the frame comoving with the fluid (so, this is
                         not [delta p/delta rho] in the synchronous or newtonian gauge!) */
   double Omega_EDE;        /**< \f$ wa_{DE} \f$: Early Dark Energy density parameter */
