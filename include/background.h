@@ -16,7 +16,7 @@ enum spatial_curvature {flat,open,closed};
 
 /** list of possible parametrisations of the DE equation of state */
 
-enum equation_of_state {CLP,EDE,SDE};
+enum equation_of_state {CLP,EDE,SDE,UDM};
 
 /** list of formats for the vector of background quantities */
 
@@ -110,6 +110,10 @@ struct background
   double w0_sde;
   double alpha_sde;
   double beta_sde;
+  double a_t;
+  double beta_udm;
+  //double Omega_ludm;
+  //double Omega_mudm;
   double cs2_fld;  /**< \f$ c^2_{s~DE} \f$: sound speed of the fluid in the frame comoving with the fluid (so, this is
                         not [delta p/delta rho] in the synchronous or newtonian gauge!) */
   double Omega_EDE;        /**< \f$ wa_{DE} \f$: Early Dark Energy density parameter */
@@ -164,6 +168,8 @@ struct background
   int index_bg_rho_lambda;    /**< cosmological constant density */
   int index_bg_rho_fld;       /**< fluid density */
   int index_bg_w_fld;         /**< fluid equation of state */
+  int index_bg_dw_fld;
+  int index_bg_int_fld;
   int index_bg_rho_idr;       /**< density of interacting dark radiation */
   int index_bg_rho_ur;        /**< relativistic neutrinos/relics density */
   int index_bg_rho_dcdm;      /**< dcdm density */

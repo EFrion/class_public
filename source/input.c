@@ -2896,6 +2896,9 @@ int input_read_parameters_species(struct file_content * pfc,
       else if ((strstr(string1,"SDE") != NULL) || (strstr(string1,"sde") != NULL)) {
         pba->fluid_equation_of_state = SDE;
       }
+      else if ((strstr(string1,"UDM") != NULL) || (strstr(string1,"udm") != NULL)) {
+        pba->fluid_equation_of_state = UDM;
+      }
       else {
         class_stop(errmsg,"incomprehensible input '%s' for the field 'fluid_equation_of_state'",string1);
       }
@@ -2921,6 +2924,15 @@ int input_read_parameters_species(struct file_content * pfc,
       class_read_double("w0_sde",pba->w0_sde);
       class_read_double("alpha_sde",pba->alpha_sde);
       class_read_double("beta_sde",pba->beta_sde);
+      class_read_double("cs2_fld",pba->cs2_fld);
+    }
+    if (pba->fluid_equation_of_state == UDM) {
+      /** 8.a.2.5) Equation of state of the fluid in 'UDM' case */
+      /* Read */
+      class_read_double("a_t",pba->a_t);
+      //class_read_double("Omega_ludm",pba->Omega_ludm);
+      class_read_double("beta_udm",pba->beta_udm);
+      //class_read_double("Omega_mudm",pba->Omega_mudm);
       class_read_double("cs2_fld",pba->cs2_fld);
     }
   }
@@ -3463,6 +3475,10 @@ int input_prepare_pk_eq(struct precision * ppr,
   double true_w0_sde;
   double true_alpha_sde;
   double true_beta_sde;
+  double true_a_t;
+  //double true_Omega_ludm;
+  //double true_Omega_mudm;
+  double true_beta_udm;
   double * z;
 
   /** Store the true cosmological parameters (w0, wa) somwhere before using temporarily some fake ones in this function */
@@ -3474,6 +3490,10 @@ int input_prepare_pk_eq(struct precision * ppr,
   true_w0_sde = pba->w0_sde;
   true_alpha_sde = pba->alpha_sde;
   true_beta_sde = pba ->beta_sde;
+  true_a_t = pba->a_t;
+  //true_Omega_ludm = pba->Omega_ludm;
+  //true_Omega_mudm = pba->Omega_mudm;
+  true_beta_udm = pba->beta_udm;
 
   /** The fake calls of the background and thermodynamics module will be done in non-verbose mode */
   pba->background_verbose = 0;
@@ -3535,6 +3555,10 @@ int input_prepare_pk_eq(struct precision * ppr,
     pba->w0_sde = true_w0_sde;
     pba->alpha_sde = true_alpha_sde;
     pba->beta_sde = true_beta_sde;
+    pba->beta_udm = true_beta_udm;
+    pba->a_t = true_a_t;
+    //pba->Omega_ludm = true_Omega_ludm;
+    //pba->Omega_mudm = true_Omega_mudm;
     class_call(background_init(ppr,pba),
                pba->error_message,
                errmsg);
@@ -5425,6 +5449,11 @@ int input_default_params(struct background *pba,
   pba->w0_sde = 1.;
   pba->alpha_sde = 0.;
   pba->beta_sde = 0.;
+  /** 9.a.2.4) 'UDM' case */
+  pba->a_t = 0.;
+  pba->beta_udm = 0.;
+  //pba->Omega_ludm = 0.7;
+  //pba->Omega_mudm = 0.3;
   /** 9.b) Omega scalar field */
   /** 9.b.1) Potential parameters and initial conditions */
   pba->scf_parameters = NULL;

@@ -537,6 +537,10 @@ int background_functions(
     /* get w_fld from dedicated function */
     class_call(background_w_fld(pba,a,&w_fld,&dw_over_da,&integral_fld), pba->error_message, pba->error_message);
     pvecback[pba->index_bg_w_fld] = w_fld;
+    
+    /* get the derivative and integral*/
+    //pvecback[pba->index_bg_dw_fld] = dw_over_da;
+    //pvecback[pba->index_bg_int_fld] = integral_fld;
 
     // Obsolete: at the beginning, we had here the analytic integral solution corresponding to the case w=w0+w1(1-a/a0):
     // pvecback[pba->index_bg_rho_fld] = pba->Omega0_fld * pow(pba->H0,2) / pow(a,3.*(1.+pba->w0_fld+pba->wa_fld)) * exp(3.*pba->wa_fld*(a-1.));
@@ -695,6 +699,11 @@ int background_w_fld(
   // Stochastic dark energy from eq. (18) in 1906.06107
   	*w_fld = -1.*pba->w0_sde /(1.+pow(a,-1.*pba->alpha_sde)*pba->beta_sde);
   	break;
+  case UDM:
+  // Unified Dark Matter and Dark Energy from eqs. (4.1) and (4.2) in 1011.6669.
+    //*w_fld = pow(a,3.)*(-1.-tanh(pba->beta_udm*(pow(a,3.)-pow(pba->a_t,3.))/3.)) / (pow(a,3.)+3.*log(cosh(pba->beta_udm*(pow(a,3.)-pow(pba->a_t,3.))/3.))/(pba->beta_udm) + pba->Omega_mudm/pba->Omega_ludm);
+    *w_fld = pow(a,3.)*(-1.-tanh(pba->beta_udm*(pow(a,3.)-pow(pba->a_t,3.))/3.)) / (pow(a,3.)+3.*log(cosh(pba->beta_udm*(pow(a,3.)-pow(pba->a_t,3.))/3.))/pba->beta_udm);
+    break;
   }
 
 
@@ -717,6 +726,10 @@ int background_w_fld(
   case SDE:
     *dw_over_da_fld = -1.*pba->alpha_sde * pba->beta_sde * pba->w0_sde * pow(a,-1.*pba->alpha_sde -1.) / (pow(1.+pow(a,-1.*pba->alpha_sde)*pba->beta_sde,2.));
     break;
+  case UDM:
+  	//*dw_over_da_fld = pow(a,2.)*pba->beta_udm*pba->Omega_ludm * ( (3.*tanh(pba->beta_udm*(pow(a,3.)-pow(pba->a_t,3.))/3.)+3.) * (pow(a,3.)*pba->beta_udm*pba->Omega_ludm*tanh(pba->beta_udm*(pow(a,3.)-pow(pba->a_t,3.))/3.) - pba->beta_udm*pba->Omega_mudm - 3.*pba->Omega_ludm*log(cosh(pba->beta_udm*(pow(a,3.)-pow(pba->a_t,3.))/3.))) + pow(a,3.)*pba->beta_udm*(1.-pow(tanh(pba->beta_udm*(pow(a,3.)-pow(pba->a_t,3.))/3.),2.))*(3.*pba->Omega_ludm*log(cosh(pba->beta_udm*(pow(a,3.)-pow(pba->a_t,3.))/3.)) + pba->beta_udm*(pow(a,3.)*pba->Omega_ludm+pba->Omega_mudm)) ) / pow(3.*pba->Omega_ludm*log(cosh(pba->beta_udm*(pow(a,3.)-pow(pba->a_t,3.))/3.)) + pba->beta_udm*(pow(a,3.)*pba->Omega_ludm+pba->Omega_mudm),2.);
+  	*dw_over_da_fld = pow(a,2.)*pba->beta_udm * ( (3.*tanh(pba->beta_udm*(pow(a,3.)-pow(pba->a_t,3.))/3.)+3.) * (pow(a,3.)*pba->beta_udm*tanh(pba->beta_udm*(pow(a,3.)-pow(pba->a_t,3.))/3.) - 3.*log(cosh(pba->beta_udm*(pow(a,3.)-pow(pba->a_t,3.))/3.))) + pow(a,3.)*pba->beta_udm*(1.-pow(tanh(pba->beta_udm*(pow(a,3.)-pow(pba->a_t,3.))/3.),2.))*(3.*log(cosh(pba->beta_udm*(pow(a,3.)-pow(pba->a_t,3.))/3.)) + pba->beta_udm*pow(a,3.)) ) / pow(3.*log(cosh(pba->beta_udm*(pow(a,3.)-pow(pba->a_t,3.))/3.)) + pba->beta_udm*pow(a,3.),2.);
+  	break;
   }
 
   /** - finally, give the analytic solution of the following integral:
@@ -738,6 +751,10 @@ int background_w_fld(
     break;
   case SDE:
     *integral_fld = 3.*(log(1./a) + pba->w0_sde*log((pow(a,pba->alpha_sde)+pba->beta_sde)/(1.+pba->beta_sde))/ pba->alpha_sde);
+    break;
+  case UDM:
+    //*integral_fld = 3.*log(1./a) + log( (pow(a,3.)*pba->Omega_ludm*pba->beta_udm + pba->Omega_mudm*pba->beta_udm + 3.*pba->Omega_ludm*log(cosh(pba->beta_udm*(-pow(a,3.)+pow(pba->a_t,3.))/3.))) / (pba->Omega_ludm*pba->beta_udm + pba->Omega_mudm*pba->beta_udm + 3.*pba->Omega_ludm*log(cosh(pba->beta_udm*(pow(pba->a_t,3.)-1.)/3.))) );
+    *integral_fld = 3.*log(1./a) + log( (pow(a,3.)*pba->beta_udm + 3.*log(cosh(pba->beta_udm*(-pow(a,3.)+pow(pba->a_t,3.))/3.))) / (pba->beta_udm + 3.*log(cosh(pba->beta_udm*(pow(pba->a_t,3.)-1.)/3.))) );
     break;
   }
 
@@ -1024,6 +1041,10 @@ int background_indices(
   /* - index for fluid */
   class_define_index(pba->index_bg_rho_fld,pba->has_fld,index_bg,1);
   class_define_index(pba->index_bg_w_fld,pba->has_fld,index_bg,1);
+  
+  /* - index for fluid derivative and integral */
+/*  class_define_index(pba->index_bg_dw_fld,pba->has_fld,index_bg,1);*/
+//  class_define_index(pba->index_bg_int_fld,pba->has_fld,index_bg,1);
 
   /* - index for ultra-relativistic neutrinos/species */
   class_define_index(pba->index_bg_rho_ur,pba->has_ur,index_bg,1);
@@ -2428,6 +2449,8 @@ int background_output_data(
     class_store_double(dataptr,pvecback[pba->index_bg_rho_lambda],pba->has_lambda,storeidx);
     class_store_double(dataptr,pvecback[pba->index_bg_rho_fld],pba->has_fld,storeidx);
     class_store_double(dataptr,pvecback[pba->index_bg_w_fld],pba->has_fld,storeidx);
+    //class_store_double(dataptr,pvecback[pba->index_bg_dw_fld],pba->has_fld,storeidx);
+    //class_store_double(dataptr,pvecback[pba->index_bg_int_fld],pba->has_fld,storeidx);
     class_store_double(dataptr,pvecback[pba->index_bg_rho_ur],pba->has_ur,storeidx);
     class_store_double(dataptr,pvecback[pba->index_bg_rho_idr],pba->has_idr,storeidx);
     class_store_double(dataptr,pvecback[pba->index_bg_rho_idm_dr],pba->has_idm_dr,storeidx);
